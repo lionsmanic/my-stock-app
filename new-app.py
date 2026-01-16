@@ -5,96 +5,102 @@ import plotly.graph_objects as go
 import numpy as np
 
 # === 1. 網頁基本設定 ===
-st.set_page_config(page_title="AI 全球股市終極戰情室", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AI 全球股市戰情室 (美股宇宙版)", page_icon="🌌", layout="wide", initial_sidebar_state="expanded")
 
-# === 2. 超巨量中文名稱資料庫 (300+ 檔) ===
+# === 2. 巨量中文名稱資料庫 (美股大幅擴充) ===
 STOCK_NAME_MAP = {
-    # --- 權值與晶圓代工 ---
+    # --- 🇺🇸 美股：科技七雄 (Mag 7) ---
+    "AAPL": "Apple (蘋果)", "MSFT": "Microsoft (微軟)", "GOOG": "Alphabet (谷歌)", 
+    "AMZN": "Amazon (亞馬遜)", "NVDA": "NVIDIA (輝達)", "TSLA": "Tesla (特斯拉)", "META": "Meta (臉書)",
+
+    # --- 🇺🇸 美股：大數據 / AI 軟體 (PLTR 概念) ---
+    "PLTR": "Palantir (大數據國防)", "SNOW": "Snowflake (雲端數據)", "MDB": "MongoDB (資料庫)", 
+    "ESTC": "Elastic (搜尋數據)", "PATH": "UiPath (自動化機器人)", "AI": "C3.ai (企業AI)", 
+    "U": "Unity (3D引擎)", "RBLX": "Roblox (元宇宙)",
+
+    # --- 🇺🇸 美股：網路資安 (Cybersecurity) ---
+    "CRWD": "CrowdStrike (終端防護)", "PANW": "Palo Alto (防火牆)", "FTNT": "Fortinet (資安設備)", 
+    "ZS": "Zscaler (雲端資安)", "OKTA": "Okta (身份驗證)", "NET": "Cloudflare (網通CDN)", 
+    "S": "SentinelOne (AI資安)",
+
+    # --- 🇺🇸 美股：SaaS / 雲端 / 生產力 ---
+    "CRM": "Salesforce (客戶管理)", "ADBE": "Adobe (設計軟體)", "ORCL": "Oracle (甲骨文)", 
+    "NOW": "ServiceNow (IT管理)", "SAP": "SAP (企業軟體)", "INTU": "Intuit (財稅軟體)", 
+    "WDAY": "Workday (人資軟體)", "TEAM": "Atlassian (Jira/專案)", "DDOG": "Datadog (監控)",
+
+    # --- 🇺🇸 美股：半導體 / 設備 ---
+    "AMD": "AMD (超微)", "INTC": "Intel (英特爾)", "QCOM": "Qualcomm (高通)", "AVGO": "Broadcom (博通)", 
+    "MU": "Micron (美光)", "TXN": "TI (德儀)", "ASML": "ASML (艾司摩爾)", "TSM": "台積電ADR", "ARM": "Arm", 
+    "AMAT": "Applied Materials", "LRCX": "Lam Research", "ADI": "Analog Devices", "MRVL": "Marvell", 
+    "KLAC": "KLA Corp", "ON": "ON Semi (安森美)",
+
+    # --- 🇺🇸 美股：金融科技 (Fintech) / 支付 ---
+    "V": "Visa", "MA": "Mastercard", "PYPL": "PayPal", "SQ": "Block (Square)", "COIN": "Coinbase (加密貨幣)", 
+    "HOOD": "Robinhood (券商)", "AFRM": "Affirm (先買後付)", "SOFI": "SoFi (網銀)", "UPST": "Upstart (AI信貸)",
+
+    # --- 🇺🇸 美股：電商 / 零工經濟 / 旅遊 ---
+    "SHOP": "Shopify (電商開店)", "MELI": "MercadoLibre (拉美電商)", "SE": "Sea Ltd (冬海)", 
+    "PDD": "Pinduoduo (拼多多)", "BABA": "Alibaba (阿里巴巴)", "JD": "JD.com (京東)",
+    "UBER": "Uber", "DASH": "DoorDash", "ABNB": "Airbnb", "BKNG": "Booking.com",
+
+    # --- 🇺🇸 美股：串流影音 / 媒體 ---
+    "NFLX": "Netflix (網飛)", "DIS": "Disney (迪士尼)", "WBD": "Warner Bros (華納)", 
+    "SPOT": "Spotify (音樂)", "ROKU": "Roku (電視棒)",
+
+    # --- 🇺🇸 美股：醫療 / 製藥 / 生技 ---
+    "LLY": "Eli Lilly (減肥藥)", "NVO": "Novo Nordisk (減肥藥)", "JNJ": "Johnson & Johnson", "PFE": "Pfizer", 
+    "MRK": "Merck", "UNH": "UnitedHealth", "ABBV": "AbbVie", "AMGN": "Amgen", "ISRG": "Intuitive Surgical (達文西)", 
+    "VRTX": "Vertex", "REGN": "Regeneron", "MODNA": "Moderna",
+
+    # --- 🇺🇸 美股：國防 / 工業 / 航太 ---
+    "LMT": "Lockheed Martin (洛克希德)", "RTX": "Raytheon (雷神)", "BA": "Boeing (波音)", 
+    "GD": "General Dynamics", "NOC": "Northrop Grumman", "AXON": "Axon (電擊槍)", "GE": "GE Aerospace",
+
+    # --- 🇺🇸 美股：能源 / 原物料 ---
+    "XOM": "Exxon Mobil", "CVX": "Chevron", "COP": "ConocoPhillips", "SLB": "Schlumberger", 
+    "OXY": "Occidental (西方石油)", "FCX": "Freeport (銅礦)", "AA": "Alcoa (鋁)",
+
+    # --- 🇺🇸 美股：消費 / 零售 ---
+    "COST": "Costco", "WMT": "Walmart", "PG": "P&G", "KO": "Coca-Cola", "PEP": "PepsiCo", "MCD": "McDonald's", 
+    "SBUX": "Starbucks", "NKE": "Nike", "LULU": "Lululemon", "CMG": "Chipotle",
+
+    # --- 🇺🇸 美股：ETF ---
+    "SPY": "S&P 500", "QQQ": "Nasdaq 100", "SOXX": "半導體", "TLT": "20年美債", "GLD": "黃金", 
+    "ARKK": "ARK Innovation", "SMH": "半導體", "XLE": "能源", "XLV": "醫療", "XLF": "金融", "BITO": "比特幣期貨",
+
+    # === 🇹🇼 台股部分 (維持原樣) ===
     "2330.TW": "台積電", "2303.TW": "聯電", "5347.TWO": "世界先進", "6770.TW": "力積電", "3711.TW": "日月光投控",
-    
-    # --- 面板 / 光電 / 顯示器 (NEW!) ---
     "2409.TW": "友達", "3481.TW": "群創", "6116.TW": "彩晶", "8069.TWO": "元太", "6176.TW": "瑞儀", 
-    "4961.TW": "天鈺", "3545.TW": "敦泰", "4956.TW": "光鋐", "2406.TW": "國碩", "5234.TW": "達興材料",
-
-    # --- AI 系統 / 組裝 / 品牌 ---
-    "2317.TW": "鴻海", "2382.TW": "廣達", "3231.TW": "緯創", "6669.TW": "緯穎", "2356.TW": "英業達", 
-    "2376.TW": "技嘉", "2357.TW": "華碩", "2324.TW": "仁寶", "4938.TW": "和碩", "2301.TW": "光寶科", 
-    "2353.TW": "宏碁", "2377.TW": "微星", "3706.TW": "神達", "3013.TW": "晟銘電", "8210.TW": "勤誠",
-
-    # --- IC 設計 (高價/IP/ASIC) ---
-    "2454.TW": "聯發科", "3034.TW": "聯詠", "2379.TW": "瑞昱", "3035.TW": "智原", "3443.TW": "創意", 
-    "3661.TW": "世芯-KY", "3529.TW": "力旺", "6531.TW": "愛普", "6643.TW": "M31", "5274.TW": "信驊", 
-    "5269.TW": "祥碩", "6415.TW": "矽力-KY", "6756.TW": "威鋒電子", "2458.TW": "義隆", "6202.TW": "盛群",
-    "6138.TW": "茂達", "8016.TW": "矽創", "3227.TWO": "原相",
-
-    # --- 記憶體 / 封測 ---
+    "4961.TW": "天鈺", "3545.TW": "敦泰", "2317.TW": "鴻海", "2382.TW": "廣達", "3231.TW": "緯創", 
+    "6669.TW": "緯穎", "2356.TW": "英業達", "2376.TW": "技嘉", "2357.TW": "華碩", "2324.TW": "仁寶", 
+    "4938.TW": "和碩", "2301.TW": "光寶科", "2353.TW": "宏碁", "2377.TW": "微星", "3706.TW": "神達", 
+    "3013.TW": "晟銘電", "8210.TW": "勤誠", "2454.TW": "聯發科", "3034.TW": "聯詠", "2379.TW": "瑞昱", 
+    "3035.TW": "智原", "3443.TW": "創意", "3661.TW": "世芯-KY", "3529.TW": "力旺", "6531.TW": "愛普", 
+    "6643.TW": "M31", "5274.TW": "信驊", "5269.TW": "祥碩", "6415.TW": "矽力-KY", "6756.TW": "威鋒電子", 
+    "2458.TW": "義隆", "6202.TW": "盛群", "6138.TW": "茂達", "8016.TW": "矽創", "3227.TWO": "原相",
     "2408.TW": "南亞科", "2344.TW": "華邦電", "2337.TW": "旺宏", "3260.TWO": "威剛", "8299.TWO": "群聯", 
     "2451.TW": "創見", "8271.TWO": "宇瞻", "4967.TW": "十銓", "3006.TW": "晶豪科", "5289.TW": "宜鼎",
     "2449.TW": "京元電", "6239.TW": "力成", "6147.TW": "頎邦", "8150.TW": "南茂", "3583.TW": "辛耘",
-
-    # --- 設備 / 材料 / CoWoS ---
     "3131.TW": "弘塑", "3680.TW": "家登", "6196.TW": "帆宣", "6187.TWO": "萬潤", "5443.TWO": "均豪", 
     "5536.TW": "聖暉", "2404.TW": "漢唐", "5483.TWO": "中美晶", "6488.TW": "環球晶", "3532.TW": "台勝科",
-
-    # --- 散熱 / PCB / 被動元件 ---
     "3017.TW": "奇鋐", "3324.TWO": "雙鴻", "3653.TW": "健策", "2421.TW": "建準", "6230.TW": "超眾",
     "3037.TW": "欣興", "8046.TW": "南電", "3189.TW": "景碩", "2368.TW": "金像電", "2313.TW": "華通", 
     "6269.TW": "台郡", "4958.TW": "臻鼎-KY", "2383.TW": "台光電", "6213.TW": "聯茂", "6274.TW": "台燿",
     "2327.TW": "國巨", "2492.TW": "華新科", "3026.TW": "禾伸堂", "2456.TW": "奇力新",
-
-    # --- 光學 / 網通 / 低軌衛星 ---
     "3008.TW": "大立光", "3406.TW": "玉晶光", "3362.TW": "先進光", "2345.TW": "智邦", "5388.TWO": "中磊", 
     "6285.TW": "啟碁", "2314.TW": "台揚", "3704.TW": "合勤控", "2419.TW": "仲琦",
-
-    # --- 傳產 (重電/航運/鋼鐵/塑化/水泥) ---
     "1513.TW": "中興電", "1519.TW": "華城", "1503.TW": "士電", "1504.TW": "東元", "1605.TW": "華新", 
     "6806.TW": "森崴能源", "9958.TW": "世紀鋼", "3708.TW": "上緯", "6443.TW": "元晶",
     "2603.TW": "長榮", "2609.TW": "陽明", "2615.TW": "萬海", "2606.TW": "裕民", "2637.TW": "慧洋-KY", 
     "2618.TW": "長榮航", "2610.TW": "華航", "2634.TW": "漢翔", "2645.TW": "長榮航太",
     "2002.TW": "中鋼", "2014.TW": "中鴻", "2027.TW": "大成鋼", "1101.TW": "台泥", "1102.TW": "亞泥",
     "1301.TW": "台塑", "1303.TW": "南亞", "1326.TW": "台化", "6505.TW": "台塑化", 
-
-    # --- 傳產 (紡織/製鞋/自行車/造紙) ---
     "1402.TW": "遠東新", "1476.TW": "儒鴻", "1477.TW": "聚陽", "9910.TW": "豐泰", "9904.TW": "寶成",
     "9914.TW": "美利達", "9921.TW": "巨大", "1904.TW": "正隆", "1907.TW": "永豐餘",
-
-    # --- 金融 (全金控 + 銀行) ---
     "2881.TW": "富邦金", "2882.TW": "國泰金", "2891.TW": "中信金", "2886.TW": "兆豐金", "2884.TW": "玉山金", 
     "2892.TW": "第一金", "5880.TW": "合庫金", "2885.TW": "元大金", "2880.TW": "華南金", "2883.TW": "開發金", 
     "2887.TW": "台新金", "2890.TW": "永豐金", "2888.TW": "新光金", "2889.TW": "國票金", "2834.TW": "臺企銀",
-
-    # --- 生技 ---
-    "1795.TW": "美時", "6446.TW": "藥華藥", "4743.TWO": "合一", "1760.TW": "寶齡富錦", "4147.TW": "中裕", "6550.TW": "北極星",
-
-    # --- 美股：科技七雄 & 半導體 ---
-    "AAPL": "Apple", "MSFT": "Microsoft", "GOOG": "Alphabet", "AMZN": "Amazon", "NVDA": "NVIDIA", "TSLA": "Tesla", "META": "Meta",
-    "AMD": "AMD", "INTC": "Intel", "QCOM": "Qualcomm", "AVGO": "Broadcom", "MU": "Micron", "TXN": "TI", 
-    "ASML": "ASML", "TSM": "台積電ADR", "ARM": "Arm", "AMAT": "Applied Materials", "LRCX": "Lam Research", 
-    "ADI": "Analog Devices", "MRVL": "Marvell", "KLAC": "KLA",
-
-    # --- 美股：SaaS / 資安 / 雲端 / 大數據 ---
-    "CRM": "Salesforce", "ADBE": "Adobe", "ORCL": "Oracle", "NOW": "ServiceNow", "SNOW": "Snowflake",
-    "PLTR": "Palantir", "CRWD": "CrowdStrike", "PANW": "Palo Alto", "UBER": "Uber", "ABNB": "Airbnb",
-    "NET": "Cloudflare", "DDOG": "Datadog", "SQ": "Block", "MDB": "MongoDB", "ZM": "Zoom",
-
-    # --- 美股：醫療 / 製藥 / 生技 ---
-    "LLY": "Eli Lilly (減肥藥)", "NVO": "Novo Nordisk (減肥藥)", "JNJ": "Johnson & Johnson", "PFE": "Pfizer", 
-    "MRK": "Merck", "UNH": "UnitedHealth", "ABBV": "AbbVie", "AMGN": "Amgen", "ISRG": "Intuitive Surgical",
-    "VRTX": "Vertex", "REGN": "Regeneron",
-
-    # --- 美股：國防 / 工業 / 能源 / 航太 ---
-    "LMT": "Lockheed Martin", "RTX": "Raytheon", "BA": "Boeing", "GD": "General Dynamics", "CAT": "Caterpillar",
-    "DE": "John Deere", "XOM": "Exxon Mobil", "CVX": "Chevron", "COP": "ConocoPhillips", "SLB": "Schlumberger",
-    "GE": "General Electric",
-
-    # --- 美股：消費 / 零售 / 餐飲 ---
-    "COST": "Costco", "WMT": "Walmart", "PG": "P&G", "KO": "Coca-Cola", "PEP": "PepsiCo", "MCD": "McDonald's",
-    "SBUX": "Starbucks", "NKE": "Nike", "DIS": "Disney", "TGT": "Target", "HD": "Home Depot",
-
-    # --- 美股：金融 / 支付 / 區塊鏈 / 投資 ---
-    "JPM": "JPMorgan", "BAC": "Bank of America", "V": "Visa", "MA": "Mastercard", "PYPL": "PayPal",
-    "COIN": "Coinbase", "MSTR": "MicroStrategy", "HOOD": "Robinhood", "BRK-B": "Berkshire Hathaway", 
-    "GS": "Goldman Sachs", "MS": "Morgan Stanley", "BLK": "BlackRock"
+    "1795.TW": "美時", "6446.TW": "藥華藥", "4743.TWO": "合一", "1760.TW": "寶齡富錦", "4147.TW": "中裕", "6550.TW": "北極星"
 }
 
 def get_stock_name(ticker):
@@ -116,7 +122,7 @@ def calculate_score_for_row(row, prev_row, prev2_row, prev3_row, fundamentals, t
     rev_growth = fundamentals.get('rev_growth')
     price = row['Close']
     
-    # 1. 估值與基本面
+    # --- 1. 估值與基本面 ---
     if eps is not None:
         if eps < 0: score -= 3 
         else:
@@ -126,7 +132,7 @@ def calculate_score_for_row(row, prev_row, prev2_row, prev3_row, fundamentals, t
             elif upside < -0.2: score -= 1.5
 
     # 美股本益比標準較寬鬆
-    pe_limit = 30 if is_us_stock else 20
+    pe_limit = 35 if is_us_stock else 20
     if pe:
         if 0 < pe < pe_limit: reasons.append(f"PE<{pe_limit}"); score += 1
         elif pe > (pe_limit * 2.5): reasons.append("PE過高"); score -= 1
@@ -136,21 +142,21 @@ def calculate_score_for_row(row, prev_row, prev2_row, prev3_row, fundamentals, t
     if rev_growth > 0.2: reasons.append("營收飆"); score += 1
     elif rev_growth < -0.1: score -= 1
 
-    # 2. 趨勢 (Trend)
+    # --- 2. 趨勢 (Trend) ---
     if price > row['SMA_240']:
         if prev_row['Close'] < prev_row['SMA_240']: reasons.append("🚀突破年線"); score += 2.5
         else: score += 1
     else:
         if prev_row['Close'] > prev_row['SMA_240']: reasons.append("跌破年線"); score -= 2
 
-    # 3. 型態與量能
+    # --- 3. 型態與量能 ---
     if (price > row['Open']) and (prev_row['Close'] > prev_row['Open']) and (prev2_row['Close'] > prev2_row['Open']) and (price > prev_row['Close']):
         reasons.append("🔥連三紅"); score += 2
     
     if row['Volume'] > row['Vol_SMA5'] * 1.8 and price > row['Open']:
         reasons.append("💰爆量"); score += 1.5
 
-    # 4. 指標
+    # --- 4. 指標 ---
     if prev_row['MACD_Hist'] < 0 and row['MACD_Hist'] > 0: reasons.append("MACD翻紅"); score += 1.5
     if row['RSI'] < 30: reasons.append("RSI超賣"); score += 1
     if row['RSI'] > 75: reasons.append("RSI過熱"); score -= 2
@@ -167,7 +173,7 @@ def calculate_score_for_row(row, prev_row, prev2_row, prev3_row, fundamentals, t
 def get_analysis_matrix(ticker_list, target_pe):
     results = []
     
-    with st.spinner(f'AI 正在全球深度掃描 {len(ticker_list)} 檔個股 (含美股/20年線)...'):
+    with st.spinner(f'AI 正在執行全球深度掃描 (含美股歷史數據，請耐心稍候)...'):
         for ticker in ticker_list:
             ticker = ticker.strip()
             if not ticker: continue
@@ -176,6 +182,7 @@ def get_analysis_matrix(ticker_list, target_pe):
             
             try:
                 stock = yf.Ticker(ticker)
+                
                 try:
                     info = stock.info
                     fundamentals = {
@@ -186,14 +193,15 @@ def get_analysis_matrix(ticker_list, target_pe):
                     }
                 except: fundamentals = {'eps': None, 'pe': None, 'pb': None, 'rev_growth': 0}
 
+                # 抓取 MAX 資料以計算 20年線
                 df = stock.history(period="max")
                 if len(df) < 250: continue
                 
                 df['SMA_20'] = df['Close'].rolling(window=20).mean()
                 df['SMA_60'] = df['Close'].rolling(window=60).mean()
-                df['SMA_240'] = df['Close'].rolling(window=240).mean()
-                df['SMA_1200'] = df['Close'].rolling(window=1200).mean()
-                df['SMA_4800'] = df['Close'].rolling(window=4800).mean()
+                df['SMA_240'] = df['Close'].rolling(window=240).mean()   # 年線
+                df['SMA_1200'] = df['Close'].rolling(window=1200).mean() # 5年線
+                df['SMA_4800'] = df['Close'].rolling(window=4800).mean() # 20年線
                 
                 delta = df['Close'].diff()
                 gain = (delta.where(delta > 0, 0))
@@ -229,6 +237,7 @@ def get_analysis_matrix(ticker_list, target_pe):
 
                 is_undervalued_gem = False
                 gem_reason = ""
+                # 美股通常用較長均線判斷，且 EPS > 0
                 if fundamentals['eps'] and fundamentals['eps'] > 0:
                     current_price = row_0['Close']
                     if not pd.isna(row_0['SMA_4800']) and current_price < row_0['SMA_4800']:
@@ -293,29 +302,32 @@ def plot_chart(ticker):
 with st.sidebar:
     st.header("🗂️ 全球產業與族群設定")
     PRESET_DICT = {
-        "📝 我的自選觀察清單 (Custom)": {"codes": "2330.TW, 2409.TW, 2603.TW, TSLA, NVDA", "pe": 25},
+        "📝 我的自選觀察清單 (Custom)": {"codes": "2330.TW, 2409.TW, 2603.TW, TSLA, NVDA, PLTR", "pe": 25},
         
-        # --- 🇹🇼 台股電子 ---
+        # --- 🇺🇸 美股熱門 (美股宇宙) ---
+        "🇺🇸 美股-科技七雄 (Mag 7)": {"codes": "AAPL, MSFT, GOOG, AMZN, NVDA, TSLA, META", "pe": 30},
+        "🌌 美股-大數據與AI軟體 (PLTR概念)": {"codes": "PLTR, SNOW, MDB, ESTC, PATH, AI, U, RBLX", "pe": 40},
+        "🔒 美股-網路資安 (Cybersecurity)": {"codes": "CRWD, PANW, FTNT, ZS, OKTA, NET, S", "pe": 40},
+        "☁️ 美股-SaaS 軟體與雲端": {"codes": "CRM, ADBE, ORCL, NOW, SAP, INTU, WDAY, TEAM, DDOG", "pe": 35},
+        "⚙️ 美股-半導體巨頭": {"codes": "AMD, INTC, QCOM, AVGO, MU, TXN, ASML, TSM, ARM, AMAT, LRCX, ADI, MRVL, KLAC, ON", "pe": 25},
+        "💳 美股-金融科技與支付": {"codes": "V, MA, PYPL, SQ, COIN, HOOD, AFRM, SOFI, UPST", "pe": 25},
+        "🛒 美股-電商與零工經濟": {"codes": "SHOP, MELI, SE, PDD, BABA, JD, UBER, DASH, ABNB, BKNG", "pe": 30},
+        "🛡️ 美股-國防/工業/航太": {"codes": "LMT, RTX, BA, GD, NOC, AXON, GE", "pe": 20},
+        "💊 美股-醫療與製藥 (減肥藥)": {"codes": "LLY, NVO, JNJ, PFE, MRK, UNH, ABBV, AMGN, ISRG, VRTX, MODNA", "pe": 25},
+        
+        # --- 🇹🇼 台股電子 (科技島) ---
+        "🤖 台股-AI 伺服器/組裝": {"codes": "2317.TW, 2382.TW, 3231.TW, 6669.TW, 2356.TW, 2376.TW, 2357.TW, 2324.TW, 4938.TW, 2301.TW, 2353.TW, 2377.TW, 3706.TW, 3013.TW, 8210.TW", "pe": 25},
+        "💡 台股-半導體上游 (IC設計)": {"codes": "2454.TW, 3034.TW, 2379.TW, 3035.TW, 3443.TW, 3661.TW, 3529.TW, 6531.TW, 6643.TW, 5269.TW, 4961.TW, 8016.TW, 6415.TW, 5274.TW, 6138.TW, 3227.TWO", "pe": 35},
+        "🏭 台股-晶圓代工/設備/材料": {"codes": "2330.TW, 2303.TW, 5347.TWO, 6770.TW, 3711.TW, 3131.TW, 3680.TW, 6196.TW, 6187.TWO, 5443.TWO, 6488.TW, 3532.TW", "pe": 22},
         "🖥️ 台股-面板/光電/顯示器": {"codes": "2409.TW, 3481.TW, 6116.TW, 8069.TWO, 6176.TW, 4961.TW, 3545.TW, 4956.TW, 2406.TW, 5234.TW", "pe": 15},
         "💾 台股-記憶體族群 (全)": {"codes": "2408.TW, 2344.TW, 2337.TW, 3260.TWO, 8299.TWO, 2451.TW, 8271.TWO, 4967.TW, 3006.TW, 5289.TW", "pe": 15},
-        "🤖 台股-AI 伺服器/組裝": {"codes": "2317.TW, 2382.TW, 3231.TW, 6669.TW, 2356.TW, 2376.TW, 2357.TW, 2324.TW, 4938.TW, 2301.TW, 2353.TW, 2377.TW, 3706.TW, 3013.TW, 8210.TW", "pe": 25},
-        "💡 台股-半導體上游 (IC設計)": {"codes": "2454.TW, 3034.TW, 2379.TW, 3035.TW, 3443.TW, 3661.TW, 3529.TW, 6531.TW, 6643.TW, 5269.TW, 8016.TW, 6415.TW, 5274.TW, 6138.TW, 3227.TWO", "pe": 35},
-        "🏭 台股-晶圓代工/設備/材料": {"codes": "2330.TW, 2303.TW, 5347.TWO, 6770.TW, 3711.TW, 3131.TW, 3680.TW, 6196.TW, 6187.TWO, 5443.TWO, 6488.TW, 3532.TW", "pe": 22},
-        "❄️ 台股-散熱/PCB/被動": {"codes": "3017.TW, 3324.TWO, 3653.TW, 2421.TW, 3037.TW, 8046.TW, 3189.TW, 2368.TW, 2313.TW, 6274.TW, 2327.TW, 2492.TW, 3026.TW", "pe": 20},
+        "❄️ 台股-散熱/PCB/被動": {"codes": "3017.TW, 3324.TWO, 3653.TW, 2421.TW, 3037.TW, 8046.TW, 3189.TW, 2368.TW, 2313.TW, 2383.TW, 6274.TW, 2327.TW, 2492.TW, 3026.TW", "pe": 20},
         
         # --- 🇹🇼 台股傳產與金融 ---
-        "🚢 台股-航運/航空/造船": {"codes": "2603.TW, 2609.TW, 2615.TW, 2606.TW, 2637.TW, 2618.TW, 2610.TW, 2634.TW, 2645.TW", "pe": 10},
         "🔌 台股-重電/綠能/電纜": {"codes": "1513.TW, 1519.TW, 1503.TW, 1504.TW, 1605.TW, 6806.TW, 9958.TW, 3708.TW, 6443.TW", "pe": 25},
-        "🛢️ 台股-塑化/鋼鐵/紡織": {"codes": "1301.TW, 1303.TW, 1326.TW, 6505.TW, 2002.TW, 2014.TW, 2027.TW, 1101.TW, 1402.TW, 1476.TW, 1477.TW, 9910.TW", "pe": 12},
+        "🚢 台股-航運/航空/造船": {"codes": "2603.TW, 2609.TW, 2615.TW, 2606.TW, 2637.TW, 2618.TW, 2610.TW, 2634.TW, 2645.TW", "pe": 10},
+        "🛢️ 台股-塑化/鋼鐵/紡織": {"codes": "1301.TW, 1303.TW, 1326.TW, 6505.TW, 2002.TW, 2014.TW, 2027.TW, 1101.TW, 1402.TW, 1476.TW, 1477.TW, 9910.TW, 9914.TW, 9921.TW, 1904.TW", "pe": 12},
         "💰 台股-金融金控 (全)": {"codes": "2881.TW, 2882.TW, 2891.TW, 2886.TW, 2884.TW, 2892.TW, 5880.TW, 2885.TW, 2880.TW, 2883.TW, 2887.TW, 2890.TW, 2888.TW, 2889.TW, 2834.TW", "pe": 15},
-        
-        # --- 🇺🇸 美股熱門 ---
-        "🇺🇸 美股-科技七雄 (Mag 7)": {"codes": "AAPL, MSFT, GOOG, AMZN, NVDA, TSLA, META", "pe": 30},
-        "⚙️ 美股-半導體巨頭": {"codes": "AMD, INTC, QCOM, AVGO, MU, TXN, ASML, TSM, ARM, AMAT, LRCX, ADI, MRVL, KLAC", "pe": 25},
-        "☁️ 美股-SaaS 軟體與資安": {"codes": "CRM, ADBE, ORCL, NOW, SNOW, PLTR, CRWD, PANW, UBER, ABNB, NET, DDOG, SQ, MDB, ZM", "pe": 40},
-        "💊 美股-生技製藥 (減肥藥)": {"codes": "LLY, NVO, JNJ, PFE, MRK, UNH, ABBV, AMGN, ISRG, VRTX, REGN", "pe": 25},
-        "🛡️ 美股-軍工/能源/工業": {"codes": "LMT, RTX, BA, GD, CAT, DE, XOM, CVX, COP, SLB, GE", "pe": 18},
-        "🛍️ 美股-消費/金融/支付": {"codes": "COST, WMT, PG, KO, PEP, MCD, SBUX, NKE, DIS, JPM, BAC, V, MA, PYPL, COIN, MSTR, BRK-B", "pe": 22},
     }
     
     selected_group = st.selectbox("選擇市場與族群", list(PRESET_DICT.keys()))
@@ -324,9 +336,9 @@ with st.sidebar:
     target_pe = st.slider(f"合理本益比基準", 5, 80, group_data["pe"])
     user_tickers = st.text_area("觀察清單", value=group_data["codes"], height=100)
     
-    st.info("💡 **海量資料庫 (300+)**：\n已加入面板 (友達/群創)、記憶體 (美光/威剛)、美股軟體 (PLTR/Snowflake) 等完整族群。")
+    st.info("💡 **宇宙級資料庫**：\n包含美股 PLTR, SNOW, COIN 等創新科技股，以及台股面板、記憶體、傳產全族群。")
 
-st.title("🌍 AI 全球股市終極戰情室")
+st.title("🌌 AI 全球股市終極戰情室")
 st.caption(f"六大面向 + T-2回測 + **20年線價值挖掘** | 基準本益比: **{target_pe}倍**")
 
 # === 執行 ===
